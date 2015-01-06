@@ -1,0 +1,306 @@
+
+  @Test
+  public void testAssertionsEnabled()
+  {
+    try
+    {
+      assert(false) : "Assert failed";
+      throw new IllegalStateException("Enable assertions!");
+    }
+    catch ( AssertionError ae )
+    {
+      // do nothing
+    }
+  }
+  
+  @Test
+  public void testCreation()
+  {
+    RTree<Long> rt = new RTree<Long>();
+  }
+  
+  @Test
+  public void testInsertWithPoint()
+  {
+    RTree<Object> rt = new RTree<Object>();
+    Object o = new Object();
+    rt.insert(ZEROES, ZEROES, o);
+    List<Object> results =
+      rt.search(new float[] {-1.0f, -1.0f},
+                new float[] { 2.0f,  2.0f});
+    assert(results.get(0) == o);
+  }
+  
+  @Test
+  public void testInsertWithRect()
+  {
+    RTree<Object> rt = new RTree<Object>();
+    Object o = new Object();
+    rt.insert(ZEROES, ONES, o);
+    List<Object> results =
+      rt.search( new float[] {-1.0f, -1.0f},
+                 new float[] {3.0f, 3.0f} );
+    assert(results.get(0) == o);
+  }
+  
+  @Test
+  public void testInsertWithNegativeCoords()
+  {
+    RTree<Object> rt = new RTree<Object>();
+    Object n = new Object();
+    Object p = new Object();
+    rt.insert(NEG_ONES, POINT_FIVES, n);
+    rt.insert(POINT_FIVES, ONES, p);
+    List<Object> results =
+      rt.search( NEG_POINT_FIVES, ZEROES );
+    assert(results.size() == 1) : "Invalid returns for neg, expected 1 got " + results.size();
+    assert(results.get(0) == n);
+    results =
+      rt.search( POINT_FIVES, ZEROES );
+    assert(results.size() == 1) : "Invalid returns for pos, expected 1 got " + results.size();
+    assert(results.get(0) == p);
+  }
+  
+  @Test
+  public void testEmptyResults()
+  {
+    RTree<Object> rt = new RTree<Object>();
+    Object o = new Object();
+    rt.insert(ZEROES, ZEROES, o);
+    List<Object> results =
+      rt.search(new float[] {-1.0f, -1.0f},
+                new float[] { 0.5f,  0.5f});
+    assert(results.isEmpty());
+  }
+
+  @Test
+  public void testSplitNodesSmall()
+  {
+    RTree<Object> rt = new RTree(2,1,2, RTree.SeedPicker.QUADRATIC);
+    float[][] coords = new float[][] { {0.0f, 0.0f}, {1.0f, 1.0f}, {2.0f, 2.0f}, {3.0f, 3.0f} };
+    float[] dims = new float[]{0.5f, 0.5f};
+    Object[] entries = new Object[] { 0, 1, 2, 3 };
+    for (int i = 0; i < entries.length; i++ )
+    {
+      rt.insert(coords[i], dims, entries[i]);
+    }
+    List<Object> results = rt.search(new float[] {2.0f, 2.0f},
+                                     new float[] {0.5f, 0.5f});
+    assert (results.size() == 1);
+    assert (results.get(0).equals(entries[2]));
+  }
+
+  @Test
+  public void testRemoveAll()
+  {
+    // setup is like testSplitNodesSmall
+    RTree<Object> rt = new RTree(2,1,2);
+    float[][] coords = new float[][] { {0.0f, 0.0f}, {1.0f, 1.0f}, {2.0f, 2.0f}, {3.0f, 3.0f} };
+    float[] dims = new float[]{0.5f, 0.5f};
+    Object[] entries = new Object[] { new Object(), new Object(), new Object(), new Object() };
+    for (int i = 0; i < entries.length; i++ )
+    {
+      rt.insert(coords[i], dims, entries[i]);
+    }
+    List<Object> results = rt.search(new float[] {2.0f, 2.0f},
+                                     new float[] {0.5f, 0.5f});
+    assert (results.size() == 1);
+    assert (results.get(0).equals(entries[2]));
+
+    float[] sCoords = new float[] { -0.5f * Float.MAX_VALUE, -0.5f * Float.MAX_VALUE };
+    float[] sDims = new float[] { Float.MAX_VALUE, Float.MAX_VALUE };
+    results = rt.search(sCoords, sDims);
+    assert(results.size() == rt.size());
+    for ( Object result: results )
+    {
+      boolean deleted = rt.delete(sCoords, sDims, result);
+      assert(deleted);
+    }
+    assert(rt.size() == 0);
+    float [] newCoords = new float[] { 0.0f, 0.0f };
+    float [] newDims = new float[] { 0.0f, 0.0f };
+    Object entry = new Object();
+    rt.insert(newCoords, newDims, entry);
+    assert( rt.search(newCoords, newDims).get(0) == entry );
+  }
+
+  @Test
+  public void testRemoveAlmostAll()
+  {
+    // setup is like testSplitNodesSmall
+    RTree<Object> rt = new RTree(2,1,2);
+    float[][] coords = new float[][] { {0.0f, 0.0f}, {1.0f, 1.0f}, {2.0f, 2.0f}, {3.0f, 3.0f} };
+    float[] dims = new float[]{0.5f, 0.5f};
+    Object[] entries = new Object[] { new Object(), new Object(), new Object(), new Object() };
+    for (int i = 0; i < entries.length; i++ )
+    {
+      rt.insert(coords[i], dims, entries[i]);
+    }
+    List<Object> results = rt.search(new float[] {2.0f, 2.0f},
+                                     new float[] {0.5f, 0.5f});
+    assert (results.size() == 1);
+    assert (results.get(0).equals(entries[2]));
+
+    float[] sCoords = new float[] { -0.5f * Float.MAX_VALUE, -0.5f * Float.MAX_VALUE };
+    float[] sDims = new float[] { Float.MAX_VALUE, Float.MAX_VALUE };
+    results = rt.search(sCoords, sDims);
+    assert(results.size() == rt.size());
+    Iterator resultIter = results.iterator();
+    while ( resultIter.hasNext() )
+    {
+      Object toRemove = resultIter.next();
+      if ( !resultIter.hasNext() )
+      {
+        break;
+      }
+      boolean deleted = rt.delete(sCoords, sDims, toRemove);
+      assert(deleted);
+    }
+
+    assert(rt.size() == 1);
+    float [] newCoords = new float[] { 5.0f, 5.0f };
+    float [] newDims = new float[] { 0.0f, 0.0f };
+    Object entry = new Object();
+    rt.insert(newCoords, newDims, entry);
+    results = rt.search(newCoords, newDims);
+    assert (results.size() == 1);
+    assert (results.get(0) == entry);
+  }
+
+  @Test
+  public void testSplitNodesBig()
+  {
+    RTree<Object> rt = new RTree<Object>(50,2,2);
+    int numEntries = rt.getMaxEntries() * 4;
+    float[] coords = new float[] { 0.0f, 0.0f };
+    float[] dims = new float[] { 0.5f, 0.5f };
+    Object[] entries = new Object[numEntries];
+    
+    for ( int i = 0; i < numEntries; i++ )
+    {
+      coords[0] = i;
+      entries[i] = new Object();
+      rt.insert(coords, dims, entries[i]);
+    }
+    
+    for ( int i = 0; i < numEntries; i++ )
+    {
+      coords[0] = i;
+      List<Object> results = rt.search(coords, dims);
+      assert(results.size() == 1);
+      assert(results.get(0) == entries[i]);
+    }
+  }
+  
+  @Test
+  public void testVisualize()
+    throws Exception
+  {
+    RTree<Object> rt = new RTree<Object>(50,2,2);
+    int numEntries = rt.getMaxEntries() * 4;
+    float[] coords = new float[] { 0.0f, 0.0f };
+    float[] dims = new float[] { 0.5f, 0.5f };
+    Object[] entries = new Object[numEntries];
+    
+    for ( int i = 0; i < numEntries; i++ )
+    {
+      coords[0] = i;
+      entries[i] = new Object();
+      rt.insert(coords, dims, entries[i]);
+    }
+//    String html = rt.visualize_();
+    System.err.println("Writing to " + System.getProperty("java.io.tmpdir"));
+    OutputStream os = new FileOutputStream(System.getProperty("java.io.tmpdir") + "/rtree.html");
+//    os.write(html.getBytes());
+    os.flush();
+    os.close();
+  }
+  
+  @Test
+  public void testDelete()
+  {
+    RTree<Object> rt = new RTree<Object>();
+    Object entry = new Object();
+    List<Object> results;
+    rt.insert(ZEROES, ONES, entry);
+    results = rt.search(ZEROES, ONES);
+    assert(results.size() == 1);
+    assert(results.get(0) == entry);
+    rt.delete(ZEROES, ONES, entry);
+    results = rt.search(ZEROES, ONES);
+    assert(results.size() == 0);
+  }
+
+  @Test
+  public void testInsertDelete() {
+    class DataObject {
+      final float[] val;
+      final float[] dim;
+      final Integer id;
+
+      DataObject(float[] val, float[] dim, int id) {
+        this.val = val;
+        this.dim = dim;
+        this.id = id;
+      }
+    }
+
+    for ( int j = 0; j < 500; j++ )
+    {
+      RTree<Integer> tree = new RTree<Integer>(10, 2, 3, RTree.SeedPicker.LINEAR);
+      List<DataObject> rects = new ArrayList<DataObject>();
+
+      for (int i = 0; i < 150; i++) {
+        rects.add(new DataObject(
+            new float[]{i, i * 2, i * 3},
+            new float[]{0, 0, 0},
+            i));
+        DataObject dataObject = rects.get(i);
+        tree.insert(dataObject.val, dataObject.dim, dataObject.id);
+      }
+
+      for (int i = 0; i < 150; i++) {
+        DataObject dataObject = rects.get(i);
+        boolean deleted = tree.delete(dataObject.val, dataObject.dim, dataObject.id);
+        assert deleted;
+      }
+    }
+  }
+
+  @Test
+  public void testInsertNegCoords() {
+    class DataObject {
+      final float[] val;
+      final float[] dim;
+      final Integer id;
+
+      DataObject(float[] val, float[] dim, int id) {
+        this.val = val;
+        this.dim = dim;
+        this.id = id;
+      }
+    }
+
+    for ( int j = 0; j < 500; j++ )
+    {
+      RTree<Integer> tree = new RTree<Integer>(10, 2, 3);
+      List<DataObject> rects = new ArrayList<DataObject>();
+
+      for (int i = -70; i < 80; i++) {
+        rects.add(new DataObject(
+            new float[]{i, i * 2, i * 3},
+            new float[]{0, 0, 0},
+            i));
+        DataObject dataObject = rects.get(70+i);
+        tree.insert(dataObject.val, dataObject.dim, dataObject.id);
+      }
+
+      for (int i = 0; i < rects.size(); i++) {
+        DataObject dataObject = rects.get(i);
+        boolean deleted = tree.delete(dataObject.val, dataObject.dim, dataObject.id);
+        assert deleted;
+      }
+      assert tree.size() == 0;
+    }
+  }
+
