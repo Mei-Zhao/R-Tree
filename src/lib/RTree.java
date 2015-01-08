@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
+import javax.jws.Oneway;
+
 
 /**
  * Implementation of an arbitrary-dimension RTree. Based on R-Trees: A Dynamic
@@ -782,7 +784,7 @@ public class RTree<T>
 	  
 	  private ArrayList Skyline_obj = new ArrayList();
 	  private Float Min_disc 		= Float.MAX_VALUE;
-	  private String Sky 			= "";
+	  private float[] sky;
 	  
 	  
 	  public void Skyline()
@@ -790,70 +792,106 @@ public class RTree<T>
 		  	BBS(root);
 	  }
 	  
-	  public void BBS(Node n)
+	  @SuppressWarnings("unchecked")
+	public void BBS(Node n)
 	  {
 			int rec  = 0;
 			int numChildren = (n.children == null) ? 0 : n.children.size();
 			while (numChildren != 0) 
 			{
+				//tentukan skyline object dengan BBS
 				Skyline(n.children.get(rec), this.Min_disc, rec);
-				Skyline_obj.add(this.Sky);
+				Skyline_obj.add(this.sky);
+
+				
+				System.exit(0);
+				
+				
 				this.Min_disc = Float.MAX_VALUE;
 				rec++;
 				numChildren--;
 			}
-			
+
 			for (int i = 0; i < Skyline_obj.size(); i++) {
 		    	System.out.println("Skyline object: "+Skyline_obj.get(i));
 		    }
-
 	  }
 	  
-	  public void Skyline(Node n, Float Min_disc, Integer rec)
-	  {		/**
-			 * Jika bukan root rectangle maka hitung jarak nilai setiap rectangle dengan titik 0 
-			 * persamman ada pada PPT
-			 * 
-			 * From : An Optimal and Progressive Algorithm for Skyline Queries
-			 * Algorithm BBS (R-tree R) 
-				S= // list of skyline points
-				insert all entries of the root Rin the heap 
-				
-				while heap not empty 
-					remove top entry e
-					if e is dominated by some point in S discard e
-						else // e is not dominated
-							if e is an intermediate entry 
-								for each child ei of e
-									if ei is not dominated by some point in S
-										insert ei
-										into heap 
-									else // e is a data point
-										insert ei into S 
-				end while 
-				End BNN
-			 */
-		  	
-	    	System.out.println("coor :  "+Arrays.toString(n.coords)+" Child : "+n.children.size());
-    		Float disc = Min_distance_n(n.coords);
-    		if(n.leaf == true && (n.children.size() == 0) )
-    		{
-				if ( disc <= this.Min_disc ) {
-					this.Min_disc = disc;
-					this.Sky = Arrays.toString(n.coords);
+	  
+	public boolean Skyline(Node n, Float Min_disc, Integer rec)
+	  {	
+			System.out.println("lower-left corner [rec] "+rec+" :  "+Arrays.toString(n.coords)+" Child : "+n.children.size());
+    		//cek apakah rec di dominasi oleh object yang ada pada S ?
+			if(!isDominated(n))
+			{	
+				//tidak di dominasi
+	    		//cek apakah rec tersebut merupakan intermediate entry // internal node
+	    		if (n.children.size() != 0) 
+	    		{	    			
+					String str = Arrays.toString(n.coords);
+					System.out.println("Rec obj :"+str);
+					
+	    			int numChildren = (n.children == null) ? 0 : n.children.size();
+	    			for ( int i = 0; i < numChildren; i++ )
+	    			{
+	    					Skyline(n.children.get(i),this.Min_disc,rec);
+	    			}
+				}else{
+					int numChildren = (n.children == null) ? 0 : n.children.size();
+	    			for ( int i = 0; i < numChildren; i++ )
+	    			{
+							String str = Arrays.toString(n.coords);
+							System.out.println("sky obj :"+str);
+							
+							this.sky = n.coords;
+	    					Skyline(n.children.get(i),this.Min_disc,rec);
+	    			}
 				}
-    		}
-			System.out.println("Rec disc: "+disc+"\n");
-		
-			int numChildren = (n.children == null) ? 0 : n.children.size();
-			for ( int i = 0; i < numChildren; i++ )
-			{
-					Skyline(n.children.get(i),this.Min_disc,rec);
+	    		return true;
+			}else{
+				
+				//jika di dominasi -> lewati
+				return false;
 			}
 	  }
-
 	  
-	  public Float Min_distance_n(float[] coords)
+	  //cek apakah rec di dominasi oleh object yang ada pada S
+	public Boolean isDominated(Node n)
+	  {
+		  	// cek apakah S masih kosong
+			if (Skyline_obj.size() != 0)
+	    	{
+				for (int i = 0; i < Skyline_obj.size(); i++) 
+				{
+					if(CalDominated(n.coords, Skyline_obj.get(i)))
+					{
+						return true;
+					}else{
+						return false;
+					}
+				}
+				return true;
+	    	}else{
+	    		if (n.children.size() == 0) {
+	    			
+	    			Min_distance_n(n.coords);
+					
+					this.sky = n.coords;
+					return false;
+				}
+	    		return false;
+	    	}
+	  }
+	  
+	  
+	  // calculation dominated
+	public Boolean CalDominated(float[] coord,  Object object)
+	  {
+			return true;
+	  }
+	  
+	  // calculation Min_distance
+	public Float Min_distance_n(float[] coords)
 	  {
 		   Float distance = 0.0f;
 		   for (int j = 0; j < coords.length; j++) 
@@ -907,4 +945,59 @@ public class RTree<T>
 		    }
 		    pw.println( "</div>" );
 	  }
+	  
+
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+		/** -----------------------------------------------------------------------------------------------------------
+		 * Jika bukan root rectangle maka hitung jarak nilai setiap rectangle dengan titik 0 
+		 * persamman ada pada PPT
+		 * 
+		 * From : An Optimal and Progressive Algorithm for Skyline Queries
+		 * Algorithm BBS (R-tree R) 
+			S // list of skyline points 
+			Masukan semua child dari root ke dalam < heap >
+			while heap tidak kosong [lakukan] 
+				Ambil paling atas e dari <heap>, dan hapus
+				if e didominasi oleh beberapa data di dalam S maka hapus e
+				else// e tidak di dominasi
+						if e adalah intermediate entry // internal node
+							for setiap child ei dari e
+								if ei tidak didominasi oleh beberapa poin di dalam S
+									insert ei into <heap>
+						else // e adalah data poin 
+							insert ei into S 
+			end while
+		 */
+	  
+	  	/** ---------------------------------------------------------------------------------------------------------------
+  	System.out.println("lower-left corner [rec] "+rec+" :  "+Arrays.toString(n.coords)+" Child : "+n.children.size());
+  	Float disc = Min_distance_n(n.coords);
+		if(n.leaf == true && (n.children.size() == 0) )
+		{
+			if ( disc <= this.Min_disc ) {
+				this.Min_disc = disc;
+				this.Sky = Arrays.toString(n.coords);
+			}
+		}
+		System.out.println("Rec disc: "+disc+"\n");
+		int numChildren = (n.children == null) ? 0 : n.children.size();
+		for ( int i = 0; i < numChildren; i++ )
+		{
+				Skyline(n.children.get(i),this.Min_disc,rec);
+		}
+		--------------------------------------------------------------------------------------------------------------------*/
+		
+	
+	
+		/** 
+		 * NEW 
+		 */
 }

@@ -70,8 +70,6 @@ public class TestRTree
 	     * End Read File CSV
 	     */
 	    
-	    
-	    
 	    /**
 	     * Menghitung Syline Query
 	     */
