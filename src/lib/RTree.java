@@ -789,6 +789,7 @@ public class RTree<T>
 	
 	  
 	  /**
+	   * ------------------------------------------------
 	   *  ALGORITMAN BBS
 	   *  ------------------------------------------------
 	   */
@@ -823,21 +824,17 @@ public class RTree<T>
 	  
 	  public void Skyline()
 	  {
-		  	/**
-		  	 * Sort Descending rectangle berdasarkan Minimum distance 
-		  	 */
 		  	this.sortedChild = SortChild(root);
 		  	BBS(root);
 	  }
 	  
 	  
 	  /**
-	   *  Sort 
-	   *  ======================================================================
+	   * Sorting mindist 
 	   */
-	@SuppressWarnings("rawtypes")
-	public Map SortChild(Node r)
-	{
+	  @SuppressWarnings("rawtypes")
+	  public Map SortChild(Node r)
+	  {
 		  int numChildren = (r.children == null) ? 0 : r.children.size();
 		  HashMap<Integer, Float> list_distance_= new HashMap<Integer, Float>();
 		  
@@ -847,45 +844,48 @@ public class RTree<T>
 		  }
 		  Map sortedMap = sortByValue(list_distance_);
 		  return sortedMap;
-	 }
-
+	  }
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private Map sortByValue(Map unsortedMap) {
-		List list = new LinkedList(unsortedMap.entrySet());
-		 
-		Collections.sort(list, new Comparator() {
+	
+	  @SuppressWarnings({ "unchecked", "rawtypes" })
+	  private Map sortByValue(Map unsortedMap) 
+	  {
+		  List list = new LinkedList(unsortedMap.entrySet());
+		  Collections.sort(list, new Comparator() {
 			public int compare(Object o1, Object o2) {
 				return ((Comparable) ((Map.Entry) (o1)).getValue())
 							.compareTo(((Map.Entry) (o2)).getValue());
 			}
-		});
+		  });
 	 
-		Map sortedMap = new LinkedHashMap();
-		for (Iterator it = list.iterator(); it.hasNext();) {
+		  Map sortedMap = new LinkedHashMap();
+		  for (Iterator it = list.iterator(); it.hasNext();) {
 			Map.Entry entry = (Map.Entry) it.next();
 			sortedMap.put(entry.getKey(), entry.getValue());
-		}
-		return sortedMap;
-	}
+		  }
+		  return sortedMap;
+	  }
 
-	 public Float Min_distance_n(Node child)
-	 {
+	  public Float Min_distance_n(Node child)
+	  {
 		   Float distance = 0.0f;
 		   for (int j = 0; j < child.coords.length; j++) 
 		   {
 			 distance += child.coords[j];
 		   }
 		   return distance;
-	 }
-	 
-	 /**
-	  * End Sort ==================================================================================
-	  */
+	  }
 	  
-	 
+	  /**
+	   * End Sorting mindist 
+	   */
+	  
+	 /**
+	  * Visualasi Skyline Object pada Console
+	  * @param Node Root
+	  */
 	 @SuppressWarnings("rawtypes")
-	public void BBS(Node n)
+	 public void BBS(Node n)
 	 {
 		 	int rec  = 0;
 			Set set_ = this.sortedChild.entrySet();
@@ -896,21 +896,19 @@ public class RTree<T>
 			}
 			
 			for(SKY a: Skyline_obj){
-				System.out.println("Sky Object : "+a.geti()+" / "+Arrays.toString(a.getv()) + "");
+				System.out.println("Sky Object : "+Arrays.toString(a.getv()) + "");
 			}
 
 	  }
 	  
 	  
 	 @SuppressWarnings("rawtypes")
-	public void Skyline(Node n, Float Min_disc, Integer rec)
-	 {	
-			System.out.println("lower-left corner [rec] "+rec+" :  "+Arrays.toString(n.coords)+" Child : "+n.children.size());
+	 public void Skyline(Node n, Float Min_disc, Integer rec)
+	 {
 			if(isDominated(n, rec))
 			{
 	    		if (n.children.size() != 0 && n.leaf == true) {	 
 	    			Map sortedChild_ = SortChild(n);
-				  	System.out.println(sortedChild_);
 				  	Set set_ = sortedChild_.entrySet();
 					Iterator iterator2 = set_.iterator();
 					while(iterator2.hasNext()) {
@@ -931,8 +929,6 @@ public class RTree<T>
 	    					Skyline(n.children.get(i),this.Min_disc,rec);
 	    			}
 				}
-			}else{
-				System.out.println("Skip Rec ********************");
 			}
 	 }
 	  
@@ -946,8 +942,6 @@ public class RTree<T>
 					if (n.children.size() == 0)
 					{
 						Skyline_obj.add(new SKY(1,n.coords));
-						System.out.println("Object Sky "+ Arrays.toString(n.coords)+"");
-						System.out.println("============================================\n");
 					}
 					return true;
 				}else{
@@ -956,62 +950,43 @@ public class RTree<T>
 			}else{
 	    		if (n.children.size() == 0) {
 					Skyline_obj.add(new SKY(0,n.coords));
-	    			System.out.println("Inisialisasi Object Sky "+Arrays.toString(n.coords));
 				}
 	    	}
 			return true;
 	  }
 	  
 	  
-	  // calculation dominated
-	public Boolean CalDominated(float[] coord)
+	  public Boolean CalDominated(float[] coord)
 	  {			
-		int counter 			= 0;
-		for(SKY a: Skyline_obj)
-		{
-			boolean flag;
-			System.out.println("Compire  Coord :"+Arrays.toString(coord)+" Sky :"+ Arrays.toString(a.getv()));
-			System.out.println("Sky Object : "+a.geti()+" / "+Arrays.toString(a.getv()) + "");
-			for (int xx = 0; xx < a.getv().length; xx++) 
+			int counter 			= 0;
+			for(SKY a: Skyline_obj)
 			{
-				System.out.println(coord[xx]+">="+a.getv()[xx]);
-				if (coord[xx] >= a.getv()[xx]) 
+				boolean flag;
+				for (int xx = 0; xx < a.getv().length; xx++) 
 				{
-					System.out.println("TRUE");
-					flag = true;
-				}else{
-					System.out.println("FALSE");
-					flag = false;
-					counter++;
+					if (coord[xx] >= a.getv()[xx]) 
+					{
+						flag = true;
+					}else{
+						flag = false;
+						counter++;
+					}
+				}
+	
+				if (counter == Skyline_obj.size()) {
+					return true;
 				}
 			}
-
-			if (counter == Skyline_obj.size()) {
-				return true;
-			}
-		}
-		return false;
+			return false;
 	  }
 	  
-
-	  
 	  /**
-	   * Visualisasi data FLOAT array
-	   * @param coords adalah array float [ float [] ]
+	   * End Algoritman BBS
 	   */
-	  public void visualize_float_data(float[] coords)
-	  {
-		   System.out.print("\nData : ");
-		   for (int j = 0; j < coords.length; j++) 
-		   {
-			 System.out.print(coords[j]+" ");
-		   }
-		   System.out.print("\n");
-	  }
-	
+	  
 	  
 	  /**
-	   * Visualisasi 
+	   * Visualisasi Rtree
 	   * Inisialisasi untuk render HTML 
 	   */
 	  private static final int elemWidth = 150;
