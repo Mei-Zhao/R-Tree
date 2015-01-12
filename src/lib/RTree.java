@@ -2,13 +2,20 @@ package lib;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
-import javax.jws.Oneway;
 
 
 /**
@@ -781,130 +788,236 @@ public class RTree<T>
 	  } 
 	
 	  
+	  /**
+	   *  ALGORITMAN BBS
+	   *  ------------------------------------------------
+	   */
 	  
-	  private ArrayList Skyline_obj = new ArrayList();
+	  private List<SKY> Skyline_obj = new ArrayList<SKY>();
+	  
+	  @SuppressWarnings("rawtypes")
+	  List list_distance			= new ArrayList();
 	  private Float Min_disc 		= Float.MAX_VALUE;
 	  private float[] sky;
+	  @SuppressWarnings("rawtypes")
+	  private Map sortedChild; 
 	  
+	  
+	  @SuppressWarnings("unused")
+	  private class SKY
+	  {
+			  private int i;
+			  private float[] v;
+			  SKY(){}
+			  SKY(int index, float[] value){
+					  i= index;
+					  v= value;
+			  }
+			  public float[] getv(){
+				  return v;
+			  }
+			  public int geti(){
+				  return i;
+			  }
+	  }
 	  
 	  public void Skyline()
 	  {
+		  	/**
+		  	 * Sort Descending rectangle berdasarkan Minimum distance 
+		  	 */
+		  	this.sortedChild = SortChild(root);
 		  	BBS(root);
 	  }
 	  
-	  @SuppressWarnings("unchecked")
+	  
+	  /**
+	   *  Sort 
+	   *  ======================================================================
+	   */
+	@SuppressWarnings("rawtypes")
+	public Map SortChild(Node r){
+		  int numChildren = (r.children == null) ? 0 : r.children.size();
+		  HashMap<Integer, Float> list_distance_= new HashMap<Integer, Float>();
+		  
+		  for (int x = 0; x < numChildren; x++) {
+			  float dis = Min_distance_n(r.children.get(x));
+			  list_distance_.put(x, dis);
+		  }
+		  System.out.println(list_distance_);
+		  Map sortedMap = sortByValue(list_distance_);
+		  System.out.println(sortedMap);
+		  return sortedMap;
+	 }
+
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private Map sortByValue(Map unsortedMap) {
+		List list = new LinkedList(unsortedMap.entrySet());
+		 
+		Collections.sort(list, new Comparator() {
+			public int compare(Object o1, Object o2) {
+				return ((Comparable) ((Map.Entry) (o1)).getValue())
+							.compareTo(((Map.Entry) (o2)).getValue());
+			}
+		});
+	 
+		Map sortedMap = new LinkedHashMap();
+		for (Iterator it = list.iterator(); it.hasNext();) {
+			Map.Entry entry = (Map.Entry) it.next();
+			sortedMap.put(entry.getKey(), entry.getValue());
+		}
+		return sortedMap;
+	}
+
+	// calculation Min_distance untuk rectangle
+	 public Float Min_distance_n(Node child)
+	 {
+		   Float distance = 0.0f;
+		   for (int j = 0; j < child.coords.length; j++) 
+		   {
+			 distance += child.coords[j];
+		   }
+		   return distance;
+	 }
+	 
+	 /**
+	  * End Sort ==================================================================================
+	  */
+	  
+	 @SuppressWarnings("rawtypes")
 	public void BBS(Node n)
-	  {
+	 {
+		 	int rec  = 0;
+			Set set_ = this.sortedChild.entrySet();
+			Iterator iterator2 = set_.iterator();
+			while(iterator2.hasNext()) {
+				Map.Entry me2 = (Map.Entry)iterator2.next();
+				Skyline(n.children.get((int) me2.getKey()), this.Min_disc, rec);
+			}
+			
+			/*
 			int rec  = 0;
 			int numChildren = (n.children == null) ? 0 : n.children.size();
 			while (numChildren != 0) 
 			{
-				//tentukan skyline object dengan BBS
 				Skyline(n.children.get(rec), this.Min_disc, rec);
-				Skyline_obj.add(this.sky);
-
-				
-				System.exit(0);
-				
-				
-				this.Min_disc = Float.MAX_VALUE;
 				rec++;
 				numChildren--;
 			}
-
-			for (int i = 0; i < Skyline_obj.size(); i++) {
-		    	System.out.println("Skyline object: "+Skyline_obj.get(i));
-		    }
-	  }
-	  
-	  
-	public boolean Skyline(Node n, Float Min_disc, Integer rec)
-	  {	
-			System.out.println("lower-left corner [rec] "+rec+" :  "+Arrays.toString(n.coords)+" Child : "+n.children.size());
-    		//cek apakah rec di dominasi oleh object yang ada pada S ?
-			if(!isDominated(n))
-			{	
-				//tidak di dominasi
-	    		//cek apakah rec tersebut merupakan intermediate entry // internal node
-	    		if (n.children.size() != 0) 
-	    		{	    			
-					String str = Arrays.toString(n.coords);
-					System.out.println("Rec obj :"+str);
-					
-	    			int numChildren = (n.children == null) ? 0 : n.children.size();
-	    			for ( int i = 0; i < numChildren; i++ )
-	    			{
-	    					Skyline(n.children.get(i),this.Min_disc,rec);
-	    			}
-				}else{
-					int numChildren = (n.children == null) ? 0 : n.children.size();
-	    			for ( int i = 0; i < numChildren; i++ )
-	    			{
-							String str = Arrays.toString(n.coords);
-							System.out.println("sky obj :"+str);
-							
-							this.sky = n.coords;
-	    					Skyline(n.children.get(i),this.Min_disc,rec);
-	    			}
-				}
-	    		return true;
-			}else{
-				
-				//jika di dominasi -> lewati
-				return false;
+			*/
+			
+			for(SKY a: Skyline_obj){
+				System.out.println("Sky Object : "+a.geti()+" / "+Arrays.toString(a.getv()) + "");
 			}
+
 	  }
 	  
-	  //cek apakah rec di dominasi oleh object yang ada pada S
-	public Boolean isDominated(Node n)
+	  
+	 public boolean Skyline(Node n, Float Min_disc, Integer rec)
+	 {	
+			System.out.println("lower-left corner [rec] "+rec+" :  "+Arrays.toString(n.coords)+" Child : "+n.children.size());
+			
+			isDominated(n, rec);
+    		//cek apakah rec tersebut merupakan intermediate entry // internal node
+    		if (n.children.size() != 0) 
+    		{	 
+    			int numChildren = (n.children == null) ? 0 : n.children.size();
+    			for ( int i = 0; i < numChildren; i++ )
+    			{
+    					Skyline(n.children.get(i),this.Min_disc,rec);
+    			}
+			}else{
+				int numChildren = (n.children == null) ? 0 : n.children.size();
+    			for ( int i = 0; i < numChildren; i++ )
+    			{
+    					Skyline(n.children.get(i),this.Min_disc,rec);
+    			}
+			}
+    		return true;
+	  }
+	  
+	public void isDominated(Node n, Integer rec)
 	  {
 		  	// cek apakah S masih kosong
 			if (Skyline_obj.size() != 0)
 	    	{
-				for (int i = 0; i < Skyline_obj.size(); i++) 
-				{
-					if(CalDominated(n.coords, Skyline_obj.get(i)))
+				/*for (int i = 0; i < Skyline_obj.size(); i++) 
+				{*/
+//					boolean bool_dom = CalDominated(n.coords, Skyline_obj.get(i));
+					boolean bool_dom = CalDominated(n.coords);
+					if(bool_dom)
 					{
-						return true;
-					}else{
-						return false;
+						if (n.children.size() == 0)
+						{
+							this.sky = n.coords;
+							Skyline_obj.add(new SKY(1,n.coords));
+							System.out.println("Object Sky "+ Arrays.toString(this.sky)+"");
+							System.out.println("============================================\n");
+						}
 					}
-				}
-				return true;
+				//}
 	    	}else{
 	    		if (n.children.size() == 0) {
-	    			
-	    			Min_distance_n(n.coords);
-					
-					this.sky = n.coords;
-					return false;
+	    			this.sky = n.coords;
+					Skyline_obj.add(new SKY(0,n.coords));
+	    			System.out.println("Inisialisasi Object Sky "+Arrays.toString(this.sky));
 				}
-	    		return false;
 	    	}
 	  }
 	  
 	  
 	  // calculation dominated
-	public Boolean CalDominated(float[] coord,  Object object)
-	  {
-			return true;
+	public Boolean CalDominated(float[] coord)
+	  {			
+		boolean flag_exs = false;
+		System.out.println("\nStart****************************************************");
+		for(SKY a: Skyline_obj)
+		{
+			boolean flag;
+			System.out.println("Compire  Coord :"+Arrays.toString(coord)+" Sky :"+ Arrays.toString(a.getv()));
+			System.out.println("Sky Object : "+a.geti()+" / "+Arrays.toString(a.getv()) + "");
+			for (int xx = 0; xx < a.getv().length; xx++) 
+			{
+				System.out.println(coord[xx]+">="+a.getv()[xx]);
+				if (coord[xx] >= a.getv()[xx]) {
+					System.out.println("TRUE \n");
+					flag = true;
+					flag_exs = true;
+				}else{
+					System.out.println("FALSE \n");
+					flag = false;
+				}
+				if (flag == false) {
+					return true;
+				}
+			}
+
+			if (flag_exs == true) {
+				break;
+			}
+		}
+		System.out.println("Fihnis****************************************************\n");
+		return false;
 	  }
 	  
-	  // calculation Min_distance
-	public Float Min_distance_n(float[] coords)
+
+	  
+	  /**
+	   * Visualisasi data FLOAT array
+	   * @param coords adalah array float [ float [] ]
+	   */
+	  public void visualize_float_data(float[] coords)
 	  {
-		   Float distance = 0.0f;
+		   System.out.print("\nData : ");
 		   for (int j = 0; j < coords.length; j++) 
 		   {
-			 System.out.println(coords[j]);
-			 distance += coords[j];
+			 System.out.print(coords[j]+" ");
 		   }
-		   return distance;
+		   System.out.print("\n");
 	  }
-	  
-	  
-	  
 	
+	  
 	  /**
 	   * Visualisasi 
 	   * Inisialisasi untuk render HTML 
@@ -945,59 +1058,4 @@ public class RTree<T>
 		    }
 		    pw.println( "</div>" );
 	  }
-	  
-
-	  
-	  
-	  
-	  
-	  
-	  
-	  
-	  
-	  
-		/** -----------------------------------------------------------------------------------------------------------
-		 * Jika bukan root rectangle maka hitung jarak nilai setiap rectangle dengan titik 0 
-		 * persamman ada pada PPT
-		 * 
-		 * From : An Optimal and Progressive Algorithm for Skyline Queries
-		 * Algorithm BBS (R-tree R) 
-			S // list of skyline points 
-			Masukan semua child dari root ke dalam < heap >
-			while heap tidak kosong [lakukan] 
-				Ambil paling atas e dari <heap>, dan hapus
-				if e didominasi oleh beberapa data di dalam S maka hapus e
-				else// e tidak di dominasi
-						if e adalah intermediate entry // internal node
-							for setiap child ei dari e
-								if ei tidak didominasi oleh beberapa poin di dalam S
-									insert ei into <heap>
-						else // e adalah data poin 
-							insert ei into S 
-			end while
-		 */
-	  
-	  	/** ---------------------------------------------------------------------------------------------------------------
-  	System.out.println("lower-left corner [rec] "+rec+" :  "+Arrays.toString(n.coords)+" Child : "+n.children.size());
-  	Float disc = Min_distance_n(n.coords);
-		if(n.leaf == true && (n.children.size() == 0) )
-		{
-			if ( disc <= this.Min_disc ) {
-				this.Min_disc = disc;
-				this.Sky = Arrays.toString(n.coords);
-			}
-		}
-		System.out.println("Rec disc: "+disc+"\n");
-		int numChildren = (n.children == null) ? 0 : n.children.size();
-		for ( int i = 0; i < numChildren; i++ )
-		{
-				Skyline(n.children.get(i),this.Min_disc,rec);
-		}
-		--------------------------------------------------------------------------------------------------------------------*/
-		
-	
-	
-		/** 
-		 * NEW 
-		 */
 }

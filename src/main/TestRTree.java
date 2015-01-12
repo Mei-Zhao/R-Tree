@@ -18,31 +18,33 @@ public class TestRTree
 	     * m : Minimum number of Key (<= M/2)
 	     * d : Dimention of data
 	     */
-	    RTree<Integer> tree = new RTree<Integer>(4, 2, 2);
+	    RTree<Integer> tree 	= new RTree<Integer>(4, 2, 2);
 	    
 	    
 	    /**
 	     * Start Read File CSV
 	     */
-	    String csvFile      = "file/randomPoints.csv";
-	    BufferedReader br   = null;
-	    String line         = "";
+	    String csvFile      	= "file/randomPoints.csv";
+	    BufferedReader br   	= null;
+	    String line         	= "";
+	    
 	    
 	    /**
 	     * Sparator Data = pemisah antar data yang dismpan didalam csv
 	     */
-	    String cvsSplitBy   = ",";
+	    String cvsSplitBy   	= ",";
+	    
 	    
 	    /**
 	     * Mendefinisikan Path Result
 	     */
-	    String path_file_rst = "result";
+	    String path_file_rst 	= "result";
+	    
 	    
 	    /**
 	     * Index Entry = urutan data disimpan
 	     */
-	    int Entry           = 0;
-	
+	    int Entry           	= 0;
 	    try {
 	        br = new BufferedReader(new FileReader(csvFile));
 	        while ((line = br.readLine()) != null) 
@@ -50,7 +52,7 @@ public class TestRTree
 	        		  *use comma as separator
 	                  */
 	                String[] data = line.split(cvsSplitBy);
-	                tree.insert(new float[]{  Float.parseFloat(data[0]), Float.parseFloat(data[1]) },Entry);
+	                tree.insert(new float[]{  Float.parseFloat(data[0]), Float.parseFloat(data[1])  },Entry);
 	                Entry++;
 	                /**
 	                  * end Read Data
@@ -66,15 +68,15 @@ public class TestRTree
 	                catch (IOException e) { e.printStackTrace(); }
 	        }
 	    }
-	    /**
-	     * End Read File CSV
-	     */
+	    
 	    
 	    /**
 	     * Menghitung Syline Query
 	     */
 	    
 	    tree.Skyline();
+	    
+	    
 	    
 	    /**
 	     * Menampilkan Hasil Hasil ditampilkan dalam bentuk HTML
