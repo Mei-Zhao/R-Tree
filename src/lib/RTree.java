@@ -836,7 +836,8 @@ public class RTree<T>
 	   *  ======================================================================
 	   */
 	@SuppressWarnings("rawtypes")
-	public Map SortChild(Node r){
+	public Map SortChild(Node r)
+	{
 		  int numChildren = (r.children == null) ? 0 : r.children.size();
 		  HashMap<Integer, Float> list_distance_= new HashMap<Integer, Float>();
 		  
@@ -844,9 +845,7 @@ public class RTree<T>
 			  float dis = Min_distance_n(r.children.get(x));
 			  list_distance_.put(x, dis);
 		  }
-		  System.out.println(list_distance_);
 		  Map sortedMap = sortByValue(list_distance_);
-		  System.out.println(sortedMap);
 		  return sortedMap;
 	 }
 
@@ -870,7 +869,6 @@ public class RTree<T>
 		return sortedMap;
 	}
 
-	// calculation Min_distance untuk rectangle
 	 public Float Min_distance_n(Node child)
 	 {
 		   Float distance = 0.0f;
@@ -885,6 +883,7 @@ public class RTree<T>
 	  * End Sort ==================================================================================
 	  */
 	  
+	 
 	 @SuppressWarnings("rawtypes")
 	public void BBS(Node n)
 	 {
@@ -896,17 +895,6 @@ public class RTree<T>
 				Skyline(n.children.get((int) me2.getKey()), this.Min_disc, rec);
 			}
 			
-			/*
-			int rec  = 0;
-			int numChildren = (n.children == null) ? 0 : n.children.size();
-			while (numChildren != 0) 
-			{
-				Skyline(n.children.get(rec), this.Min_disc, rec);
-				rec++;
-				numChildren--;
-			}
-			*/
-			
 			for(SKY a: Skyline_obj){
 				System.out.println("Sky Object : "+a.geti()+" / "+Arrays.toString(a.getv()) + "");
 			}
@@ -914,64 +902,71 @@ public class RTree<T>
 	  }
 	  
 	  
-	 public boolean Skyline(Node n, Float Min_disc, Integer rec)
+	 @SuppressWarnings("rawtypes")
+	public void Skyline(Node n, Float Min_disc, Integer rec)
 	 {	
 			System.out.println("lower-left corner [rec] "+rec+" :  "+Arrays.toString(n.coords)+" Child : "+n.children.size());
-			
-			isDominated(n, rec);
-    		//cek apakah rec tersebut merupakan intermediate entry // internal node
-    		if (n.children.size() != 0) 
-    		{	 
-    			int numChildren = (n.children == null) ? 0 : n.children.size();
-    			for ( int i = 0; i < numChildren; i++ )
-    			{
-    					Skyline(n.children.get(i),this.Min_disc,rec);
-    			}
-			}else{
-				int numChildren = (n.children == null) ? 0 : n.children.size();
-    			for ( int i = 0; i < numChildren; i++ )
-    			{
-    					Skyline(n.children.get(i),this.Min_disc,rec);
-    			}
-			}
-    		return true;
-	  }
-	  
-	public void isDominated(Node n, Integer rec)
-	  {
-		  	// cek apakah S masih kosong
-			if (Skyline_obj.size() != 0)
-	    	{
-				/*for (int i = 0; i < Skyline_obj.size(); i++) 
-				{*/
-//					boolean bool_dom = CalDominated(n.coords, Skyline_obj.get(i));
-					boolean bool_dom = CalDominated(n.coords);
-					if(bool_dom)
-					{
-						if (n.children.size() == 0)
-						{
-							this.sky = n.coords;
-							Skyline_obj.add(new SKY(1,n.coords));
-							System.out.println("Object Sky "+ Arrays.toString(this.sky)+"");
-							System.out.println("============================================\n");
-						}
+			if(isDominated(n, rec))
+			{
+	    		if (n.children.size() != 0 && n.leaf == true) {	 
+	    			Map sortedChild_ = SortChild(n);
+				  	System.out.println(sortedChild_);
+				  	Set set_ = sortedChild_.entrySet();
+					Iterator iterator2 = set_.iterator();
+					while(iterator2.hasNext()) {
+						Map.Entry me2 = (Map.Entry)iterator2.next();
+						Skyline(n.children.get((int) me2.getKey()), this.Min_disc, rec);
 					}
-				//}
-	    	}else{
+				  	
+				}else if(n.children.size() != 0 && n.leaf == false){
+	    			int numChildren = (n.children == null) ? 0 : n.children.size();
+	    			for ( int i = 0; i < numChildren; i++ )
+	    			{
+	    					Skyline(n.children.get(i),this.Min_disc,rec);
+	    			}
+				}else{
+					int numChildren = (n.children == null) ? 0 : n.children.size();
+	    			for ( int i = 0; i < numChildren; i++ )
+	    			{
+	    					Skyline(n.children.get(i),this.Min_disc,rec);
+	    			}
+				}
+			}else{
+				System.out.println("Skip Rec ********************");
+			}
+	 }
+	  
+	 public boolean isDominated(Node n, Integer rec)
+	 {
+			if (Skyline_obj.size() != 0)
+			{
+	   			boolean bool_dom = CalDominated(n.coords);
+				if(bool_dom)
+				{
+					if (n.children.size() == 0)
+					{
+						Skyline_obj.add(new SKY(1,n.coords));
+						System.out.println("Object Sky "+ Arrays.toString(n.coords)+"");
+						System.out.println("============================================\n");
+					}
+					return true;
+				}else{
+					return false;
+				}
+			}else{
 	    		if (n.children.size() == 0) {
-	    			this.sky = n.coords;
 					Skyline_obj.add(new SKY(0,n.coords));
-	    			System.out.println("Inisialisasi Object Sky "+Arrays.toString(this.sky));
+	    			System.out.println("Inisialisasi Object Sky "+Arrays.toString(n.coords));
 				}
 	    	}
+			return true;
 	  }
 	  
 	  
 	  // calculation dominated
 	public Boolean CalDominated(float[] coord)
 	  {			
-		boolean flag_exs = false;
-		System.out.println("\nStart****************************************************");
+		int counter 			= 0;
 		for(SKY a: Skyline_obj)
 		{
 			boolean flag;
@@ -980,24 +975,21 @@ public class RTree<T>
 			for (int xx = 0; xx < a.getv().length; xx++) 
 			{
 				System.out.println(coord[xx]+">="+a.getv()[xx]);
-				if (coord[xx] >= a.getv()[xx]) {
-					System.out.println("TRUE \n");
+				if (coord[xx] >= a.getv()[xx]) 
+				{
+					System.out.println("TRUE");
 					flag = true;
-					flag_exs = true;
 				}else{
-					System.out.println("FALSE \n");
+					System.out.println("FALSE");
 					flag = false;
-				}
-				if (flag == false) {
-					return true;
+					counter++;
 				}
 			}
 
-			if (flag_exs == true) {
-				break;
+			if (counter == Skyline_obj.size()) {
+				return true;
 			}
 		}
-		System.out.println("Fihnis****************************************************\n");
 		return false;
 	  }
 	  

@@ -18,7 +18,7 @@ public class TestRTree
 	     * m : Minimum number of Key (<= M/2)
 	     * d : Dimention of data
 	     */
-	    RTree<Integer> tree 	= new RTree<Integer>(4, 2, 2);
+	    RTree<Integer> tree 	= new RTree<Integer>(3, 2, 2);
 	    
 	    
 	    /**
