@@ -58,7 +58,7 @@ public class RTree<T>
 	
 	  public RTree(int maxEntries, int minEntries, int numDims)
 	  {
-		  	this(maxEntries, minEntries, numDims, SeedPicker.LINEAR);
+		  	this(maxEntries, minEntries, numDims, SeedPicker.QUADRATIC);
 	  }
 	  
 	  
@@ -438,8 +438,8 @@ public class RTree<T>
 			      Node c 		= seedPicker == SeedPicker.LINEAR ? lPickNext(cc) : qPickNext(cc, nn);
 			      Node preferred;
 			      
-			      float e0 = getRequiredExpansion(nn[0].coords, nn[0].dimensions, c);
-			      float e1 = getRequiredExpansion(nn[1].coords, nn[1].dimensions, c);
+			      float e0 = getRequiredExpansion1(nn[0].coords, nn[0].dimensions, c);
+			      float e1 = getRequiredExpansion1(nn[1].coords, nn[1].dimensions, c);
 			      if (e0 < e1)
 			      {
 			        preferred = nn[0];
@@ -527,8 +527,8 @@ public class RTree<T>
 	    Node nextC = null;
 	    for ( Node c: cc )
 	    {
-		      float n0Exp = getRequiredExpansion(nn[0].coords, nn[0].dimensions, c);
-		      float n1Exp = getRequiredExpansion(nn[1].coords, nn[1].dimensions, c);
+		      float n0Exp = getRequiredExpansion1(nn[0].coords, nn[0].dimensions, c);
+		      float n1Exp = getRequiredExpansion1(nn[1].coords, nn[1].dimensions, c);
 		      float diff = Math.abs(n1Exp - n0Exp);
 		      if (diff > maxDiff)
 		      {
@@ -654,7 +654,7 @@ public class RTree<T>
 		    Node next 		= null;
 		    for (RTree<T>.Node c : n.children)
 		    {
-		    	  float inc = getRequiredExpansion(c.coords, c.dimensions, e);
+		    	  float inc = getRequiredExpansion1(c.coords, c.dimensions, e);
 		    	  
 			      if (inc < minInc)
 			      {
@@ -704,7 +704,20 @@ public class RTree<T>
 		    }
 		    return (expanded - area);
 	  }
-	
+	  @SuppressWarnings("unused")
+    private float getRequiredExpansion1(float[] coords, float[] dimensions, Node e){
+	      float area = getArea(dimensions);
+	      // to find the  minimum bound newCoords in each dimension and the new dimensions in each dimension 
+	      float[] newCoords = new float[dimensions.length];
+	      float[] newDimensions = new float[dimensions.length];
+	      for(int i = 0; i < coords.length;i++) {
+	         newCoords[i]= coords[i] < e.coords[i] ? coords[i] : e.coords[i];
+	         newDimensions[i] = (coords[i] +dimensions[i]) > (e.coords[i] +e.dimensions[i]) ? (coords[i] +dimensions[i]) : (e.coords[i] +e.dimensions[i]);
+	         newDimensions[i] = newDimensions[i] - newCoords[i];
+	      }
+	      float expanded = getArea(newDimensions)- area;
+	      return expanded;
+	  }
 	  
 	  private float getArea(float[] dimensions)
 	  {

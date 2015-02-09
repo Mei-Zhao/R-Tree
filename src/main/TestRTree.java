@@ -18,7 +18,7 @@ public class TestRTree
 	     * m : Minimum number of Key (<= M/2)
 	     * d : Dimention of data
 	     */
-	    RTree<Integer> tree 	= new RTree<Integer>(3, 2, 2);
+	    RTree<Integer> tree 	= new RTree<Integer>(3, 1, 2);
 	    
 	    
 	    /**
@@ -52,7 +52,8 @@ public class TestRTree
 	        		  *use comma as separator
 	                  */
 	                String[] data = line.split(cvsSplitBy);
-	                tree.insert(new float[]{  Float.parseFloat(data[0]), Float.parseFloat(data[1])  },Entry);
+	                float[] coords=new float[]{  Float.parseFloat(data[0]), Float.parseFloat(data[1])  };
+	                tree.insert(coords,Entry);
 	                Entry++;
 	                /**
 	                  * end Read Data
