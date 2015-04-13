@@ -18,7 +18,7 @@ public class TestRTree
 	     * m : Minimum number of Key (<= M/2)
 	     * d : Dimention of data
 	     */
-	    RTree<Integer> tree 	= new RTree<Integer>(3, 1, 2);
+	    RTree<Integer> tree 	= new RTree<Integer>(3, 2, 2);
 	    
 	    
 	    /**
@@ -44,7 +44,7 @@ public class TestRTree
 	    /**
 	     * Index Entry = urutan data disimpan
 	     */
-	    int Entry           	= 0;
+	    int Entry           	= 1;
 	    try {
 	        br = new BufferedReader(new FileReader(csvFile));
 	        while ((line = br.readLine()) != null) 
@@ -70,25 +70,25 @@ public class TestRTree
 	        }
 	    }
 	    
-	    
-	    /**
-	     * Menghitung Syline Query
-	     */
-	    
-	    tree.Skyline();
-	    
-	    
-	    
-	    /**
-	     * Menampilkan Hasil Hasil ditampilkan dalam bentuk HTML
-	       Keterangan Tentang Hasil dijelaskan pada file PPT
-	     */
-	    String html = tree.visualize_();
-	    System.err.println("Writing to " + path_file_rst);
-	    try (OutputStream os = new FileOutputStream(path_file_rst + "/rtree.html")) {
-	        os.write(html.getBytes());
-	        os.flush();
-	    }
+	    tree.BBS_RTree(tree);
+//	    /**
+//	     * Menghitung Syline Query
+//	     */
+//	    
+//	    tree.Skyline();
+//	    
+//	    
+//	    
+//	    /**
+//	     * Menampilkan Hasil Hasil ditampilkan dalam bentuk HTML
+//	       Keterangan Tentang Hasil dijelaskan pada file PPT
+//	     */
+//	    String html = tree.visualize_();
+//	    System.err.println("Writing to " + path_file_rst);
+//	    try (OutputStream os = new FileOutputStream(path_file_rst + "/rtree.html")) {
+//	        os.write(html.getBytes());
+//	        os.flush();
+//	    }
 	  }
   
 }

@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
+
+import javax.xml.transform.Templates;
 
 
 
@@ -456,7 +456,7 @@ public class RTree<T>
 			        {
 			          preferred = nn[0];
 			        }
-			        else if (e0 > a1)
+			        else if (a0 > a1)
 			        {
 			          preferred = nn[1];
 			        }
@@ -681,29 +681,29 @@ public class RTree<T>
 	  
 	  
 	
-	  private float getRequiredExpansion(float[] coords, float[] dimensions, Node e)
-	  {
-		    float area = getArea(dimensions);
-		      
-		    float[] deltas = new float[dimensions.length];
-		    for (int i = 0; i < deltas.length; i++)
-		    {
-			      if (coords[i] + dimensions[i] < e.coords[i] + e.dimensions[i])
-			      {
-			    	  deltas[i] = e.coords[i] + e.dimensions[i] - coords[i] - dimensions[i];
-			      }
-			      else if (coords[i] + dimensions[i] > e.coords[i] + e.dimensions[i])
-			      {
-			    	  deltas[i] = coords[i] - e.coords[i];
-			      }
-		    }
-		    float expanded = 1.0f;
-		    for (int i = 0; i < dimensions.length; i++)
-		    {
-		    	  expanded *= dimensions[i] + deltas[i];
-		    }
-		    return (expanded - area);
-	  }
+//	  private float getRequiredExpansion(float[] coords, float[] dimensions, Node e)
+//	  {
+//		    float area = getArea(dimensions);
+//		      
+//		    float[] deltas = new float[dimensions.length];
+//		    for (int i = 0; i < deltas.length; i++)
+//		    {
+//			      if (coords[i] + dimensions[i] < e.coords[i] + e.dimensions[i])
+//			      {
+//			    	  deltas[i] = e.coords[i] + e.dimensions[i] - coords[i] - dimensions[i];
+//			      }
+//			      else if (coords[i] + dimensions[i] > e.coords[i] + e.dimensions[i])
+//			      {
+//			    	  deltas[i] = coords[i] - e.coords[i];
+//			      }
+//		    }
+//		    float expanded = 1.0f;
+//		    for (int i = 0; i < dimensions.length; i++)
+//		    {
+//		    	  expanded *= dimensions[i] + deltas[i];
+//		    }
+//		    return (expanded - area);
+//	  }
 	  @SuppressWarnings("unused")
     private float getRequiredExpansion1(float[] coords, float[] dimensions, Node e){
 	      float area = getArea(dimensions);
@@ -783,6 +783,8 @@ public class RTree<T>
 			      this.leaf         = leaf;
 			      children          = new LinkedList<Node>();
 		    }
+		    
+		    
 	  }
 	
 	  private class Entry extends Node
@@ -807,195 +809,184 @@ public class RTree<T>
 	   *  ------------------------------------------------
 	   */
 	  
-	  private List<SKY> Skyline_obj = new ArrayList<SKY>();
-	  
-	  @SuppressWarnings("rawtypes")
-	  List list_distance			= new ArrayList();
-	  private Float Min_disc 		= Float.MAX_VALUE;
-	  private float[] sky;
-	  @SuppressWarnings("rawtypes")
-	  private Map sortedChild; 
-	  
-	  
-	  @SuppressWarnings("unused")
-	  private class SKY
-	  {
-			  private int i;
-			  private float[] v;
-			  SKY(){}
-			  SKY(int index, float[] value){
-					  i= index;
-					  v= value;
-			  }
-			  public float[] getv(){
-				  return v;
-			  }
-			  public int geti(){
-				  return i;
-			  }
-	  }
-	  
-	  public void Skyline()
-	  {
-		  	this.sortedChild = SortChild(root);
-		  	BBS(root);
-	  }
-	  
-	  
-	  /**
-	   * Sorting mindist 
-	   */
-	  @SuppressWarnings("rawtypes")
-	  public Map SortChild(Node r)
-	  {
-		  int numChildren = (r.children == null) ? 0 : r.children.size();
-		  HashMap<Integer, Float> list_distance_= new HashMap<Integer, Float>();
-		  
-		  for (int x = 0; x < numChildren; x++) {
-			  float dis = Min_distance_n(r.children.get(x));
-			  list_distance_.put(x, dis);
-		  }
-		  Map sortedMap = sortByValue(list_distance_);
-		  return sortedMap;
-	  }
-	
-	
-	  @SuppressWarnings({ "unchecked", "rawtypes" })
-	  private Map sortByValue(Map unsortedMap) 
-	  {
-		  List list = new LinkedList(unsortedMap.entrySet());
-		  Collections.sort(list, new Comparator() {
-			public int compare(Object o1, Object o2) {
-				return ((Comparable) ((Map.Entry) (o1)).getValue())
-							.compareTo(((Map.Entry) (o2)).getValue());
-			}
-		  });
-	 
-		  Map sortedMap = new LinkedHashMap();
-		  for (Iterator it = list.iterator(); it.hasNext();) {
-			Map.Entry entry = (Map.Entry) it.next();
-			sortedMap.put(entry.getKey(), entry.getValue());
-		  }
-		  return sortedMap;
-	  }
-
-	  public Float Min_distance_n(Node child)
-	  {
-		   Float distance = 0.0f;
-		   for (int j = 0; j < child.coords.length; j++) 
-		   {
-			 distance += child.coords[j];
-		   }
-		   return distance;
-	  }
-	  
-	  /**
-	   * End Sorting mindist 
-	   */
-	  
-	 /**
-	  * Visualasi Skyline Object pada Console
-	  * @param Node Root
-	  */
-	 @SuppressWarnings("rawtypes")
-	 public void BBS(Node n)
-	 {
-		 	int rec  = 0;
-			Set set_ = this.sortedChild.entrySet();
-			Iterator iterator2 = set_.iterator();
-			while(iterator2.hasNext()) {
-				Map.Entry me2 = (Map.Entry)iterator2.next();
-				Skyline(n.children.get((int) me2.getKey()), this.Min_disc, rec);
-			}
-			
-			for(SKY a: Skyline_obj){
-				System.out.println("Sky Object : "+Arrays.toString(a.getv()) + "");
-			}
-
-	  }
-	  
-	  
-	 @SuppressWarnings("rawtypes")
-	 public void Skyline(Node n, Float Min_disc, Integer rec)
-	 {
-			if(isDominated(n, rec))
-			{
-	    		if (n.children.size() != 0 && n.leaf == true) {	 
-	    			Map sortedChild_ = SortChild(n);
-				  	Set set_ = sortedChild_.entrySet();
-					Iterator iterator2 = set_.iterator();
-					while(iterator2.hasNext()) {
-						Map.Entry me2 = (Map.Entry)iterator2.next();
-						Skyline(n.children.get((int) me2.getKey()), this.Min_disc, rec);
-					}
-				  	
-				}else if(n.children.size() != 0 && n.leaf == false){
-	    			int numChildren = (n.children == null) ? 0 : n.children.size();
-	    			for ( int i = 0; i < numChildren; i++ )
-	    			{
-	    					Skyline(n.children.get(i),this.Min_disc,rec);
-	    			}
-				}else{
-					int numChildren = (n.children == null) ? 0 : n.children.size();
-	    			for ( int i = 0; i < numChildren; i++ )
-	    			{
-	    					Skyline(n.children.get(i),this.Min_disc,rec);
-	    			}
-				}
-			}
-	 }
-	  
-	 public boolean isDominated(Node n, Integer rec)
-	 {
-			if (Skyline_obj.size() != 0)
-			{
-	   			boolean bool_dom = CalDominated(n.coords);
-				if(bool_dom)
-				{
-					if (n.children.size() == 0)
-					{
-						Skyline_obj.add(new SKY(1,n.coords));
-					}
-					return true;
-				}else{
-					return false;
-				}
-			}else{
-	    		if (n.children.size() == 0) {
-					Skyline_obj.add(new SKY(0,n.coords));
-				}
-	    	}
-			return true;
-	  }
-	  
-	  
-	  public Boolean CalDominated(float[] coord)
-	  {			
-			int counter 			= 0;
-			for(SKY a: Skyline_obj)
-			{
-				boolean flag;
-				for (int xx = 0; xx < a.getv().length; xx++) 
-				{
-					if (coord[xx] >= a.getv()[xx]) 
-					{
-						flag = true;
-					}else{
-						flag = false;
-						counter++;
-					}
-				}
-	
-				if (counter == Skyline_obj.size()) {
-					return true;
-				}
-			}
-			return false;
-	  }
-	  
-	  /**
-	   * End Algoritman BBS
-	   */
+//	  private List<SKY> Skyline_obj = new ArrayList<SKY>();
+//	  
+//	  @SuppressWarnings("rawtypes")
+//	  List list_distance			= new ArrayList();
+//	  private Float Min_disc 		= Float.MAX_VALUE;
+//	  private float[] sky;
+//	  @SuppressWarnings("rawtypes")
+//	  private Map sortedChild; 
+//	  
+//	  
+//	  @SuppressWarnings("unused")
+//	  private class SKY
+//	  {
+//			  private int i;
+//			  private float[] v;
+//			  SKY(){}
+//			  SKY(int index, float[] value){
+//					  i= index;
+//					  v= value;
+//			  }
+//			  public float[] getv(){
+//				  return v;
+//			  }
+//			  public int geti(){
+//				  return i;
+//			  }
+//	  }
+//	  
+//	  public void Skyline()
+//	  {
+//		  	this.sortedChild = SortChild(root);
+//		  	BBS(root);
+//	  }
+//	  
+//	  
+//	  /**
+//	   * Sorting mindist 
+//	   */
+//	  @SuppressWarnings("rawtypes")
+//	  public Map SortChild(Node r)
+//	  {
+//		  int numChildren = (r.children == null) ? 0 : r.children.size();
+//		  HashMap<Integer, Float> list_distance_= new HashMap<Integer, Float>();
+//		  
+//		  for (int x = 0; x < numChildren; x++) {
+//			  float dis = Min_distance_n(r.children.get(x));
+//			  list_distance_.put(x, dis);
+//		  }
+//		  Map sortedMap = sortByValue(list_distance_);
+//		  return sortedMap;
+//	  }
+//	
+//	
+//	  @SuppressWarnings({ "unchecked", "rawtypes" })
+//	  private Map sortByValue(Map unsortedMap) 
+//	  {
+//		  List list = new LinkedList(unsortedMap.entrySet());
+//		  Collections.sort(list, new Comparator() {
+//			public int compare(Object o1, Object o2) {
+//				return ((Comparable) ((Map.Entry) (o1)).getValue())
+//							.compareTo(((Map.Entry) (o2)).getValue());
+//			}
+//		  });
+//	 
+//		  Map sortedMap = new LinkedHashMap();
+//		  for (Iterator it = list.iterator(); it.hasNext();) {
+//			Map.Entry entry = (Map.Entry) it.next();
+//			sortedMap.put(entry.getKey(), entry.getValue());
+//		  }
+//		  return sortedMap;
+//	  }	  
+//	  /**
+//	   * End Sorting mindist 
+//	   */
+//	  
+//	 /**
+//	  * Visualasi Skyline Object pada Console
+//	  * @param Node Root
+//	  */
+//	 @SuppressWarnings("rawtypes")
+//	 public void BBS(Node n)
+//	 {
+//		 	int rec  = 0;
+//			Set set_ = this.sortedChild.entrySet();
+//			Iterator iterator2 = set_.iterator();
+//			while(iterator2.hasNext()) {
+//				Map.Entry me2 = (Map.Entry)iterator2.next();
+//				Skyline(n.children.get((int) me2.getKey()), this.Min_disc, rec);
+//			}
+//			
+//			for(SKY a: Skyline_obj){
+//				System.out.println("Sky Object : "+Arrays.toString(a.getv()) + "");
+//			}
+//
+//	  }
+//	  
+//	  
+//	 @SuppressWarnings("rawtypes")
+//	 public void Skyline(Node n, Float Min_disc, Integer rec)
+//	 {
+//			if(isDominated(n, rec))
+//			{
+//	    		if (n.children.size() != 0 && n.leaf == true) {	 
+//	    			Map sortedChild_ = SortChild(n);
+//				  	Set set_ = sortedChild_.entrySet();
+//					Iterator iterator2 = set_.iterator();
+//					while(iterator2.hasNext()) {
+//						Map.Entry me2 = (Map.Entry)iterator2.next();
+//						Skyline(n.children.get((int) me2.getKey()), this.Min_disc, rec);
+//					}
+//				  	
+//				}else if(n.children.size() != 0 && n.leaf == false){
+//	    			int numChildren = (n.children == null) ? 0 : n.children.size();
+//	    			for ( int i = 0; i < numChildren; i++ )
+//	    			{
+//	    					Skyline(n.children.get(i),this.Min_disc,rec);
+//	    			}
+//				}else{
+//					int numChildren = (n.children == null) ? 0 : n.children.size();
+//	    			for ( int i = 0; i < numChildren; i++ )
+//	    			{
+//	    					Skyline(n.children.get(i),this.Min_disc,rec);
+//	    			}
+//				}
+//			}
+//	 }
+//	  
+//	 public boolean isDominated(Node n, Integer rec)
+//	 {
+//			if (Skyline_obj.size() != 0)
+//			{
+//	   			boolean bool_dom = CalDominated(n.coords);
+//				if(bool_dom)
+//				{
+//					if (n.children.size() == 0)
+//					{
+//						Skyline_obj.add(new SKY(1,n.coords));
+//					}
+//					return true;
+//				}else{
+//					return false;
+//				}
+//			}else{
+//	    		if (n.children.size() == 0) {
+//					Skyline_obj.add(new SKY(0,n.coords));
+//				}
+//	    	}
+//			return true;
+//	  }
+//	  
+//	  
+//	  public Boolean CalDominated(float[] coord)
+//	  {			
+//			int counter 			= 0;
+//			for(SKY a: Skyline_obj)
+//			{
+//				boolean flag;
+//				for (int xx = 0; xx < a.getv().length; xx++) 
+//				{
+//					if (coord[xx] >= a.getv()[xx]) 
+//					{
+//						flag = true;
+//					}else{
+//						flag = false;
+//						counter++;
+//					}
+//				}
+//	
+//				if (counter == Skyline_obj.size()) {
+//					return true;
+//				}
+//			}
+//			return false;
+//	  }
+//	  
+//	  /**
+//	   * End Algoritman BBS
+//	   */
 	  
 	  
 	  /**
@@ -1037,5 +1028,104 @@ public class RTree<T>
 		      visualize_(n.children.get(i), pw, (int)(x0 + (i * w/(float)numChildren)), y0 + elemHeight, (int)(w/(float)numChildren), h - elemHeight);
 		    }
 		    pw.println( "</div>" );
+	  }
+	  
+	 //----------my BBS algorithm----------------------------------------
+	   public Float Min_distance_n(Node child)
+	      {
+	           Float distance = 0.0f;
+	           for (int j = 0; j < child.coords.length; j++) 
+	           {
+	             distance += child.coords[j];
+	           }
+	           return distance;
+	      }
+	  @SuppressWarnings("rawtypes")
+	  class ComparatorNode implements Comparator{
+
+        @SuppressWarnings("unchecked")
+        public int compare(Object o1, Object o2) {
+            Node node1 = (Node)o1;
+            Node node2 = (Node)o2;
+            int flag=(Min_distance_n(node1)).compareTo(Min_distance_n(node2));
+            return flag;
+        }
+	      
+	  } 
+	  /*
+       * an dominate relation 
+       * if x isDominated by y  return true;
+       */
+      public boolean isDominated2D(Node n,Node e) {
+            if(e.coords[0] <= n.coords[0]
+               && e.coords[1] <= n.coords[1]
+               &&( e.coords[0] < n.coords[0]|| e.coords[1] < n.coords[1])
+               ) {
+                return true;
+            }
+          return false;
+            
+        }
+      
+      public boolean isNotDominatedBySky(Node n,List<Entry> SKY) {
+            if(SKY.size() <= 0) return true;
+            int counter   = 0;
+            boolean flag = false;
+            for(Entry e : SKY)
+            {
+                if(!isDominated2D(n,e)) {
+                    counter++;
+                }                                   
+            }
+            if (counter == SKY.size()) {
+            flag=  true;
+            }
+            return flag;
+        }
+      
+	  public List<Node > expandPQ(List<Node> PQ,Node e,List<Entry> SKY) {
+	      for (Node child : e.children) {
+	          if (isNotDominatedBySky(child,SKY)) {
+	              PQ.add(child);	              
+	          }	      
+	      }
+	      return PQ;
+	      
+	  }
+	  
+    /*
+       * PQ:index nodes are managed using a priority queue PQ, ordered
+       * by increasing values of MinDist
+      */
+	  @SuppressWarnings("unchecked")
+    public void BBS_RTree(RTree<T> tree) {
+	      ComparatorNode comparator = new ComparatorNode();
+	      List<Node> PQ = new ArrayList<Node>();
+	      // the Skyline is initially empty
+	      List<Entry> SKY = new ArrayList<Entry>();
+	      for(int i= 0; i< tree.root.children.size();i++) {
+	          //starts from the root node
+	          PQ.add(tree.root.children.get(i));
+	      }
+	      while( !PQ.isEmpty()) {
+	          Collections.sort(PQ, comparator);
+	          Node elemNode = PQ.get(0);
+	          PQ.remove(0);
+	          if(isNotDominatedBySky(elemNode,SKY)) {
+	              //if elemNode is a point then insert into SKY
+	              if(elemNode.children.size() == 0) {
+	                  SKY.add((Entry)elemNode);	              
+	              }
+	              else {
+	                  //expand ,might contain Skyline points
+	                  PQ  = expandPQ(PQ, elemNode, SKY);
+	                  
+	              }
+	          }
+	      
+	      }	
+	      for(Entry e: SKY) {
+	          System.out.println("skyline object:"+e.entry+":["+e.coords[0]+","+e.coords[1]+"]");
+	      }
 	  }
 }
